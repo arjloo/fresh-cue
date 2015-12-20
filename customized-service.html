@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
 <head>
-    <title>To define a service in ubuntu - Arj's Grocery</title>
+    <title>Autostart: to start services automatically at startup - Arj's Grocery</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -12,17 +12,17 @@
 <link rel="canonical" href="/customized-service.html">
 
         <meta name="author" content="Arj" />
-        <meta name="keywords" content="service,ubuntu" />
-        <meta name="description" content="About how to define a customized service in linux(ubuntu)" />
+        <meta name="keywords" content="autostart,ubuntu" />
+        <meta name="description" content="about how to make your programs autostart at boot time in linux (ubuntu 14.04)" />
 
         <meta property="og:site_name" content="Arj's Grocery" />
         <meta property="og:type" content="article"/>
-        <meta property="og:title" content="To define a service in ubuntu"/>
+        <meta property="og:title" content="Autostart: to start services automatically at startup"/>
         <meta property="og:url" content="/customized-service.html"/>
-        <meta property="og:description" content="About how to define a customized service in linux(ubuntu)"/>
-        <meta property="article:published_time" content="2015-12-03" />
+        <meta property="og:description" content="about how to make your programs autostart at boot time in linux (ubuntu 14.04)"/>
+        <meta property="article:published_time" content="2015-12-13" />
             <meta property="article:section" content="Linux" />
-            <meta property="article:tag" content="service" />
+            <meta property="article:tag" content="autostart" />
             <meta property="article:tag" content="ubuntu" />
             <meta property="article:author" content="Arj" />
 
@@ -77,8 +77,8 @@ Arj's Grocery            </a>
                 <h1>
                     <a href="/customized-service.html"
                        rel="bookmark"
-                       title="Permalink to To define a service in ubuntu">
-                        To define a service in ubuntu
+                       title="Permalink to Autostart: to start services automatically at startup">
+                        Autostart: to start services automatically at startup
                     </a>
                 </h1>
             </header>
@@ -88,7 +88,7 @@ Arj's Grocery            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2015-12-03T23:18:00+08:00"> Thu 03 December 2015</time>
+        <i class="fa fa-calendar"></i><time datetime="2015-12-13T21:00:00+08:00"> Sun 13 December 2015</time>
     </span>
 
 
@@ -96,13 +96,121 @@ Arj's Grocery            </a>
 
 
 <span class="label label-default">Tags</span>
-	<a href="/tag/service.html">service</a>
+	<a href="/tag/autostart.html">autostart</a>
         /
 	<a href="/tag/ubuntu.html">ubuntu</a>
     
 </footer><!-- /.post-info -->                    </div>
                 </div>
-                <p>In order to make service defined by myself run as a system defined one, which can start automatically and can be controlled by service cmd,  </p>
+                <p>How to start a program at system startup? In ubuntu, As you know, script rc.local will be called at boot time, so just append your commands to the end of rc.local and they shall be executed at startup.
+But this time, I'll show you a much more general way to deal with such issue by a command named <strong>update-rc.d</strong>.</p>
+<h3>Define a "service"</h3>
+<p>Before asking update-rc.d for help, we have to define a <strong>service</strong>, which is an executable script, in path /etc/init.d.
+Here I'll show you a <strong>service</strong> named demo for instance and the content of demo has been separated into tree partitions.</p>
+<ul>
+<li>Part1: head of script</li>
+</ul>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#! /bin/sh</span>
+<span class="c">### BEGIN INIT INFO</span>
+<span class="c"># Provides:          demo</span>
+<span class="c"># Required-Start:    $all</span>
+<span class="c"># Required-Stop:</span>
+<span class="c"># Default-Start:     2 3 4 5</span>
+<span class="c"># Default-Stop:      0 1 6</span>
+<span class="c"># Short-Description: A demo for service definition</span>
+<span class="c">### END INIT INFO</span>
+</pre></div>
+</td></tr></table>
+
+<p>$all in label <em>"Required-Start"</em> is one of the system facilities and numbers in <em>"Default-Start Default-Stop"</em> are system run level. You may turn to <a href="https://wiki.debian.org/LSBInitScripts/">How to LSBize an Init Script</a> for detail.</p>
+<ul>
+<li>Part2: functions</li>
+</ul>
+<div class="highlight"><pre>start() {  
+  echo &quot;service demo started!&quot;
+}
+stop() {
+  echo &quot;service demo stopped!&quot;
+}  
+</pre></div>
+
+
+<p>You should redefine these functions for your own service.</p>
+<ul>
+<li>Part3: a CASE expression</li>
+</ul>
+<div class="highlight"><pre>case &quot;$1&quot; in  
+  start)
+    start
+    exit 0
+  ;;
+  stop)
+    stop
+    exit 0  
+  ;;
+  restart)
+    stop
+    start
+    exit 0
+  ;;
+  **)
+    echo &quot;Usage: $0 {start|stop|restart}&quot;
+    echo 0
+  ;;  
+esac
+</pre></div>
+
+
+<p>To put <em>demo</em> in /etc/init.d and make sure it has an executable permission.
+Now you can control service <em>demo</em> by command <strong>service demo start|stop|restart</strong>, try it!
+Actually, key word <strong>service</strong> here stands for a program in ubuntu that can execute scripts in path /etc/init.d/.
+So if it won't make you uncomfortable, you can also use command like <strong>/etc/init.d/demo start</strong> to start up your service.</p>
+<h3>Usage of update-rc.d</h3>
+<p><strong>update-rc.d</strong> is used to install and remove System-V style init script links located in /etc/rcX.d where X is the runlevel number.
+During start up or when changing runlevel, links in certain /etc/rcX.d/, which pointing to scripts in path /etc/init.d/, will be executed. Here are some links in my /etc/rc0.d/.</p>
+<div class="highlight"><pre>lrwxrwxrwx   1 root root    15 Nov 25 06:19 K20rsync -&gt; ../init.d/rsync*
+lrwxrwxrwx   1 root root    17 Nov 25 06:19 S30urandom -&gt; ../init.d/urandom*
+lrwxrwxrwx   1 root root    20 Nov 25 06:19 S60umountroot -&gt; ../init.d/umountroot*
+lrwxrwxrwx   1 root root    14 Nov 25 06:19 S90halt -&gt; ../init.d/halt*
+</pre></div>
+
+
+<p>As you see, link names come in a <strong>[SK]NNname</strong> format where <strong>S</strong> stands for start, <strong>K</strong> stands for stop, <strong>NN</strong> stands for the sequence number to execute, and <strong>name</strong> refers to the script's name of course.</p>
+<p>It's easy using <strong>update-rc.d</strong> to add and remove links in /etc/rcX.d. Here's the example.</p>
+<h4>Add service</h4>
+<p>If you don't care about the priorities, just use the default one.</p>
+<div class="highlight"><pre># update-rc.d [-n] name defaults
+update-rc.d demo defaults
+</pre></div>
+
+
+<p>Otherwise,</p>
+<div class="highlight"><pre># update-rc.d [-n] name start|stop NN runlevel [runlevel]... . start|stop NN runlevel [runlevel]... .
+update-rc.d demo start 70 2 3 4 5 . stop 30 0 1 6 .
+</pre></div>
+
+
+<p>Please make sure that the sum of two sequence numbers equal to 100.</p>
+<h4>Remove service</h4>
+<p>Using command below to remove all links in /etc/rcX.d/.</p>
+<div class="highlight"><pre>#update-rc.d [-n] [-f] name remove
+update-rc.d -f demo remove
+</pre></div>
+
+
+<h3>Reference</h3>
+<ol>
+<li>https://wiki.debian.org/LSBInitScripts/</li>
+<li>http://manpages.ubuntu.com/manpages/hardy/man8/update-rc.d.8.html</li>
+</ol>
             </div>
             <!-- /.entry-content -->
     <hr/>
@@ -144,12 +252,6 @@ Arj's Grocery            </a>
 
 <section class="well well-sm">
     <ul class="list-group list-group-flush">
-            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
-              <ul class="list-group" id="social">
-                <li class="list-group-item"><a href="#"><i class="fa fa-you-can-add-links-in-your-config-file-square fa-lg"></i> You can add links in your config file</a></li>
-                <li class="list-group-item"><a href="#"><i class="fa fa-another-social-link-square fa-lg"></i> Another social link</a></li>
-              </ul>
-            </li>
 
 
 
