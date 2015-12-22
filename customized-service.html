@@ -110,16 +110,7 @@ Here I'll show you a <strong>service</strong> named demo for instance and the co
 <ul>
 <li>Part1: head of script</li>
 </ul>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#! /bin/sh</span>
-<span class="c">### BEGIN INIT INFO</span>
+<div class="highlight"><pre><span class="c">### BEGIN INIT INFO</span>
 <span class="c"># Provides:          demo</span>
 <span class="c"># Required-Start:    $all</span>
 <span class="c"># Required-Stop:</span>
@@ -128,18 +119,18 @@ Here I'll show you a <strong>service</strong> named demo for instance and the co
 <span class="c"># Short-Description: A demo for service definition</span>
 <span class="c">### END INIT INFO</span>
 </pre></div>
-</td></tr></table>
+
 
 <p>$all in label <em>"Required-Start"</em> is one of the system facilities and numbers in <em>"Default-Start Default-Stop"</em> are system run level. You may turn to <a href="https://wiki.debian.org/LSBInitScripts/">How to LSBize an Init Script</a> for detail.</p>
 <ul>
 <li>Part2: functions</li>
 </ul>
-<div class="highlight"><pre>start() {  
-  echo &quot;service demo started!&quot;
-}
-stop() {
-  echo &quot;service demo stopped!&quot;
-}  
+<div class="highlight"><pre>start<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="s2">&quot;service demo started!&quot;</span>
+<span class="o">}</span>
+stop<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="s2">&quot;service demo stopped!&quot;</span>
+<span class="o">}</span>
 </pre></div>
 
 
@@ -147,25 +138,25 @@ stop() {
 <ul>
 <li>Part3: a CASE expression</li>
 </ul>
-<div class="highlight"><pre>case &quot;$1&quot; in  
-  start)
+<div class="highlight"><pre><span class="k">case</span> <span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span> in  
+  start<span class="o">)</span>
     start
-    exit 0
-  ;;
-  stop)
+    <span class="nb">exit </span>0
+  <span class="p">;;</span>
+  stop<span class="o">)</span>
     stop
-    exit 0  
-  ;;
-  restart)
+    <span class="nb">exit </span><span class="m">0</span>  
+  <span class="p">;;</span>
+  restart<span class="o">)</span>
     stop
     start
-    exit 0
-  ;;
-  **)
-    echo &quot;Usage: $0 {start|stop|restart}&quot;
-    echo 0
-  ;;  
-esac
+    <span class="nb">exit </span>0
+  <span class="p">;;</span>
+  **<span class="o">)</span>
+    <span class="nb">echo</span> <span class="s2">&quot;Usage: </span><span class="nv">$0</span><span class="s2"> {start|stop|restart}&quot;</span>
+    <span class="nb">echo </span>0
+  <span class="p">;;</span>  
+<span class="k">esac</span>
 </pre></div>
 
 
@@ -176,10 +167,10 @@ So if it won't make you uncomfortable, you can also use command like <strong>/et
 <h3>Usage of update-rc.d</h3>
 <p><strong>update-rc.d</strong> is used to install and remove System-V style init script links located in /etc/rcX.d where X is the runlevel number.
 During start up or when changing runlevel, links in certain /etc/rcX.d/, which pointing to scripts in path /etc/init.d/, will be executed. Here are some links in my /etc/rc0.d/.</p>
-<div class="highlight"><pre>lrwxrwxrwx   1 root root    15 Nov 25 06:19 K20rsync -&gt; ../init.d/rsync*
-lrwxrwxrwx   1 root root    17 Nov 25 06:19 S30urandom -&gt; ../init.d/urandom*
-lrwxrwxrwx   1 root root    20 Nov 25 06:19 S60umountroot -&gt; ../init.d/umountroot*
-lrwxrwxrwx   1 root root    14 Nov 25 06:19 S90halt -&gt; ../init.d/halt*
+<div class="highlight"><pre>lrwxrwxrwx   <span class="m">1</span> root root    <span class="m">15</span> Nov <span class="m">25</span> 06:19 K20rsync -&gt; ../init.d/rsync*
+lrwxrwxrwx   <span class="m">1</span> root root    <span class="m">17</span> Nov <span class="m">25</span> 06:19 S30urandom -&gt; ../init.d/urandom*
+lrwxrwxrwx   <span class="m">1</span> root root    <span class="m">20</span> Nov <span class="m">25</span> 06:19 S60umountroot -&gt; ../init.d/umountroot*
+lrwxrwxrwx   <span class="m">1</span> root root    <span class="m">14</span> Nov <span class="m">25</span> 06:19 S90halt -&gt; ../init.d/halt*
 </pre></div>
 
 
@@ -187,21 +178,21 @@ lrwxrwxrwx   1 root root    14 Nov 25 06:19 S90halt -&gt; ../init.d/halt*
 <p>It's easy using <strong>update-rc.d</strong> to add and remove links in /etc/rcX.d. Here's the example.</p>
 <h4>Add service</h4>
 <p>If you don't care about the priorities, just use the default one.</p>
-<div class="highlight"><pre># update-rc.d [-n] name defaults
+<div class="highlight"><pre><span class="c"># update-rc.d [-n] name defaults</span>
 update-rc.d demo defaults
 </pre></div>
 
 
 <p>Otherwise,</p>
-<div class="highlight"><pre># update-rc.d [-n] name start|stop NN runlevel [runlevel]... . start|stop NN runlevel [runlevel]... .
-update-rc.d demo start 70 2 3 4 5 . stop 30 0 1 6 .
+<div class="highlight"><pre><span class="c"># update-rc.d [-n] name start|stop NN runlevel [runlevel]... . start|stop NN runlevel [runlevel]... .</span>
+update-rc.d demo start <span class="m">70</span> <span class="m">2</span> <span class="m">3</span> <span class="m">4</span> <span class="m">5</span> . stop <span class="m">30</span> <span class="m">0</span> <span class="m">1</span> <span class="m">6</span> .
 </pre></div>
 
 
 <p>Please make sure that the sum of two sequence numbers equal to 100.</p>
 <h4>Remove service</h4>
 <p>Using command below to remove all links in /etc/rcX.d/.</p>
-<div class="highlight"><pre>#update-rc.d [-n] [-f] name remove
+<div class="highlight"><pre><span class="c">#update-rc.d [-n] [-f] name remove</span>
 update-rc.d -f demo remove
 </pre></div>
 
